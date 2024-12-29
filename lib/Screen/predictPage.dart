@@ -1,17 +1,22 @@
+import 'package:diamon_price_predictor/Model/PredictModel.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../Provider/apiProvider.dart';
 
 class prdictPage extends StatelessWidget {
-   prdictPage({super.key});
+  prdictPage({super.key});
 
   final textcontrollerCarat=TextEditingController();
-   final textcontrollerDepth=TextEditingController();
-   final textcontrollerTable=TextEditingController();
-   String dropdownValue = 'Ideal'; // Default value
-   String dropdownValue1 = 'E'; // Default value
-   String dropdownValue2 = 'S12'; // Default value
+  final textcontrollerDepth=TextEditingController();
+  final textcontrollerTable=TextEditingController();
+  String dropdownValue = 'Ideal'; // Default value
+  String dropdownValue1 = 'E'; // Default value
+  String dropdownValue2 = 'SI2'; // Default value
 
   @override
   Widget build(BuildContext context) {
+    final predictionProvider = Provider.of<apiProvider>(context,listen: false);
 
     return Scaffold(
       backgroundColor: const Color(0xFF01180D), // Background color
@@ -69,38 +74,38 @@ class prdictPage extends StatelessWidget {
 
 
 
-              SizedBox(
-              height: 40,
-                width: 350,
-                child: DropdownButtonFormField<String>(
-                  value: dropdownValue,
-                  decoration: InputDecoration(
-                    labelText: 'Select an Cut',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12), // Rounded corners
+                    SizedBox(
+                      height: 40,
+                      width: 350,
+                      child: DropdownButtonFormField<String>(
+                        value: dropdownValue,
+                        decoration: InputDecoration(
+                          labelText: 'Select an Cut',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12), // Rounded corners
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.grey), // Border color
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.blue, width: 2), // Highlighted border
+                          ),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        ),
+                        items: <String>['Ideal', 'Premium','Good' ]
+                            .map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          dropdownValue = newValue!; // Update selected value
+                        },
+                      ),
                     ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey), // Border color
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.blue, width: 2), // Highlighted border
-                    ),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  ),
-                  items: <String>['Ideal', 'Premium','Good' ]
-                      .map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (String? newValue) {
-                    dropdownValue = newValue!; // Update selected value
-                  },
-                ),
-              ),
 
                     const SizedBox(height: 20),
 
@@ -165,7 +170,7 @@ class prdictPage extends StatelessWidget {
                           ),
                           contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                         ),
-                        items: <String>['S12', 'S11','S13' ]
+                        items: <String>['SI2', 'SI1','VS1' ]
                             .map<DropdownMenuItem<String>>((String value) {
                           return DropdownMenuItem<String>(
                             value: value,
@@ -230,7 +235,7 @@ class prdictPage extends StatelessWidget {
 
 
 
-                const SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
 
 
@@ -248,15 +253,36 @@ class prdictPage extends StatelessWidget {
                           ),
                         ),
                         onPressed: () {
-                          String carat=textcontrollerCarat.text;
-                          String depth=textcontrollerDepth.text;
-                          String table=textcontrollerTable.text;
-                          print('${carat},${depth},${table},${dropdownValue},${dropdownValue1},${dropdownValue2}');
+                          final model=predictModel(
+                              carat: double.tryParse(textcontrollerCarat.text) ??0.00,
+                              cut: dropdownValue,
+                              color: dropdownValue1,
+                              clarity: dropdownValue2,
+                              depth: double.tryParse(textcontrollerDepth.text)?? 0.00,
+                              table: double.tryParse(textcontrollerTable.text)?? 0.00
+                          );
+                          predictionProvider.predict(model);
+
+
 
                         },
                         child: const Text('Submit',style: TextStyle(fontSize: 20),),
                       ),
-                    )
+                    ),
+
+                    SizedBox(height: 20),
+                    // Use Consumer to build only the result widget
+                    Consumer<apiProvider>(builder: (context, value, child) {
+                      if (value.loading) {
+                        return const CircularProgressIndicator();  // Show loading indicator
+                      } else {
+                        return Text(
+                          value.result.isNotEmpty ? "prediction: "+value.result+" US dollar" : 'Result will show here',
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                        );
+                      }
+                    })
+
 
                   ],
                 ),

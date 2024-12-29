@@ -1,5 +1,8 @@
 import 'package:diamon_price_predictor/Screen/MyHomePage.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'Provider/apiProvider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,14 +14,13 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+    return ChangeNotifierProvider(
+      create: (context) => apiProvider(),
+      child: MaterialApp(
+        title: 'Heart Disease Predictor',
+        theme: ThemeData(primarySwatch: Colors.blue),
+        home: Myhomepage(),
       ),
-      home: Myhomepage(),
     );
   }
 }
